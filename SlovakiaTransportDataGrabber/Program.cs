@@ -1,11 +1,12 @@
 ﻿using HtmlAgilityPack;
 /**
  * Slovakian Transport Data Grabber
- * Author: GAMELASTER
- * Version: 1.0
- * About: The Data grabber from unnamed website. This is not made & published couse make someone angry or anything bad, just for research and make it some more opened..
+ * Author: Marek GAMELASTER Kraus
+ * Version: 1.1
+ * About: The Data Parser from unnamed website. For educational purposes only!
  * License: GNU General Public License v2.0
  * ChangeLog:
+ * 1.1: reform it to looks little better
  * 1.0: first stable version.
  **/
 using System;
@@ -31,10 +32,14 @@ namespace SlovakiaTransportDataGrabber
             logWriter.Write(value.Replace("\n", Environment.NewLine));
         }
 
+        static bool useJson = false;
+
         static void Main(string[] args)
         {
             logWriter.AutoFlush = true;
-            writeLog("Slovakian Transport Data Grabber\nVersion: 1.0\nAuthor: GAMELASTER\n\n");
+            writeLog("Slovakian Transport Data Grabber\nVersion: 1.1\nAuthor: Marek GAMELASTER Kraus");
+            writeLog("For educational purposes only!");
+            writeLog("License: GNU GPL v2\n\n");
             writeLog("Please write a name of grabbing website (sample: http://thedatasite.sk/):\n");
             string webUrl = Console.ReadLine();
             writeLog("Okay, " + webUrl + " is maybe valid!\nPlease write a name of data source (without .xml) (file from DATA directory):\n");
@@ -53,6 +58,11 @@ namespace SlovakiaTransportDataGrabber
                 writeLog("Failed to parse a " + fileName + ".xml! Error: " + ex.Message);
                 Console.ReadKey();
                 return;
+            }
+            writeLog("You want export JSON files instead of XML? [yes/no]:");
+            if(Console.ReadLine() == "yes")
+            {
+                useJson = true;
             }
             Console.Clear();
             writeLog("Okay! " + fileName + ".xml is fine! Starting parsing in 10 seconds!\n");
@@ -219,17 +229,22 @@ namespace SlovakiaTransportDataGrabber
 
   //          data += "</linka>";
 
-            //StreamWriter sw = File.CreateText("./" + region + "/" + region + "-" + route + ".xml");
-            // XmlSerializer xs = new XmlSerializer(typeof(linka));
-            //xs.Serialize(sw, linkaObj);
-            DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(linka));
-            FileStream fs = File.Create("./" + region + "/" + region + "-" + route + ".json");
+            if(useJson == true)
+            {
+                DataContractJsonSerializer js = new DataContractJsonSerializer(typeof(linka));
+                FileStream fs = File.Create("./" + region + "/" + region + "-" + route + ".json");
 
-            js.WriteObject(fs, linkaObj);
-            fs.Close();
-            //sw.Write(data);
-            //sw.Close();
-            
+                js.WriteObject(fs, linkaObj);
+                fs.Close();
+            }
+            else
+            {
+                StreamWriter sw = File.CreateText("./" + region + "/" + region + "-" + route + ".xml");
+                XmlSerializer xs = new XmlSerializer(typeof(linka));
+                xs.Serialize(sw, linkaObj);
+                sw.Close();
+            }
+
 
             File.Delete("temp.xml");
         }
